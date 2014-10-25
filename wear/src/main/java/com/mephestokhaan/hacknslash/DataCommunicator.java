@@ -65,9 +65,11 @@ public class DataCommunicator implements  GoogleApiClient.ConnectionCallbacks, G
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult){}
 
-    public class MessageReceiver extends BroadcastReceiver {
+    public class MessageReceiver extends BroadcastReceiver
+    {
         @Override
-        public void onReceive(Context context, Intent intent) {
+        public void onReceive(Context context, Intent intent)
+        {
             String message = intent.getStringExtra("message");
             if(messageDelegate != null)
             {

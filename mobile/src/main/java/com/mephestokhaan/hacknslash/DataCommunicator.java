@@ -40,7 +40,8 @@ public class DataCommunicator implements  GoogleApiClient.ConnectionCallbacks, G
 
     public void Connect(boolean connect)
     {
-        if(googleClient == null) {
+        if(googleClient == null)
+        {
             return;
         }
 
@@ -67,9 +68,11 @@ public class DataCommunicator implements  GoogleApiClient.ConnectionCallbacks, G
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult){}
 
-    public class MessageReceiver extends BroadcastReceiver {
+    public class MessageReceiver extends BroadcastReceiver
+    {
         @Override
-        public void onReceive(Context context, Intent intent) {
+        public void onReceive(Context context, Intent intent)
+        {
             String message = intent.getStringExtra("message");
             if(messageDelegate != null)
             {
@@ -89,7 +92,8 @@ public class DataCommunicator implements  GoogleApiClient.ConnectionCallbacks, G
             message = msg;
         }
 
-        public void run() {
+        public void run()
+        {
 
             NodeApi.GetConnectedNodesResult nodes = Wearable.NodeApi.getConnectedNodes(googleClient).await();
             for (Node node : nodes.getNodes())

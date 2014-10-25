@@ -72,8 +72,6 @@ public class WearActivity extends Activity implements SensorEventListener, Messa
 
         transformer = new RealDoubleFFT(blockSize);
 
-        registerDetector();
-
         started = true;
         audioAnalyzerTask = new AudioAnalyzer();
         audioAnalyzerTask.execute();
@@ -86,12 +84,14 @@ public class WearActivity extends Activity implements SensorEventListener, Messa
     protected void onStart()
     {
         super.onStart();
+        registerDetector();
         dataCommunicator.Connect(true);
     }
 
     @Override
     protected void onStop()
     {
+        unregisterDetector();
         dataCommunicator.Connect(false);
         super.onStop();
     }
@@ -117,14 +117,10 @@ public class WearActivity extends Activity implements SensorEventListener, Messa
     public void onSensorChanged(SensorEvent event)
     {
         double mod = Math.sqrt(Math.pow(event.values[0],2) + Math.pow(event.values[1],2) + Math.pow(event.values[2],2)) - gravity;
-        //mTextView.setText(""+mod);
     }
 
     @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy)
-    {
-
-    }
+    public void onAccuracyChanged(Sensor sensor, int accuracy){}
 
     private class AudioAnalyzer extends AsyncTask<Void, double[], Void>
     {
