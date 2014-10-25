@@ -29,6 +29,7 @@ public class WearActivity extends Activity implements SensorEventListener, Messa
     private int blockSize = 256;
     private boolean started = false;
 
+    private double lastAcceleration = 0f;
 
     private DrawView accelerationView;
     private DrawView audioView;
@@ -108,7 +109,7 @@ public class WearActivity extends Activity implements SensorEventListener, Messa
     public void onSensorChanged(SensorEvent event)
     {
         double mod = Math.sqrt(Math.pow(event.values[0], 2) + Math.pow(event.values[1], 2) + Math.pow(event.values[2], 2)) - gravity;
-
+        lastAcceleration = mod / 10f;
         if(accelerationView != null) {
             accelerationView.SetPercentage((float) mod / 10f);
         }
@@ -171,15 +172,19 @@ public class WearActivity extends Activity implements SensorEventListener, Messa
         protected void onProgressUpdate(double[]... toTransform)
         {
             float averageLowFreqAudio = 0f;
-            int examples = 20;
+            int examples = 5;
             for (int i = 0; i < examples; i++) {
-                averageLowFreqAudio += (toTransform[0][i] * 100);
+                if(averageLowFreqAudio < toTransform[0][i]) {
+                    averageLowFreqAudio = (float)toTransform[0][i];
+                }
             }
-            averageLowFreqAudio /=examples;
-            Log.e("NOISE",""+averageLowFreqAudio);
+            //averageLowFreqAudio /=examples;
+            averageLowFreqAudio = Math.abs(averageLowFreqAudio);
+            if (averageLowFreqAudio > 1.0f)
+                Log.e("NOISE",""+averageLowFreqAudio + "   "+lastAcceleration);
             if(audioView != null)
             {
-                audioView.SetPercentage(Math.abs(averageLowFreqAudio) / 30f);
+                audioView.SetPercentage(averageLowFreqAudio);
             }
         }
 
