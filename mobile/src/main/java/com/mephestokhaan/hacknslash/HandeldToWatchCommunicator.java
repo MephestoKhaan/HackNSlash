@@ -19,11 +19,11 @@ import com.google.android.gms.wearable.Wearable;
 /**
  * Created by MephestoKhaan on 25/10/2014.
  */
-public class DataCommunicator implements  GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener
+public class HandeldToWatchCommunicator implements  GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener
 {
     GoogleApiClient googleClient;
     MessageReceiverListener messageDelegate;
-    public DataCommunicator(Context context, MessageReceiverListener delegate)
+    public HandeldToWatchCommunicator(Context context, MessageReceiverListener delegate)
     {
         messageDelegate = delegate;
         googleClient = new GoogleApiClient.Builder(context)
@@ -73,8 +73,9 @@ public class DataCommunicator implements  GoogleApiClient.ConnectionCallbacks, G
         @Override
         public void onReceive(Context context, Intent intent)
         {
-            String message = intent.getStringExtra("message");
-            if(messageDelegate != null)
+            String message = intent.getStringExtra("watch");
+            if(message !=null
+            && messageDelegate != null)
             {
                 messageDelegate.onMessageReceived(message);
             }

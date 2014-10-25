@@ -20,7 +20,7 @@ public class ListenerService extends WearableListenerService {
 
             Intent messageIntent = new Intent();
             messageIntent.setAction(Intent.ACTION_SEND);
-            messageIntent.putExtra("message", message);
+            messageIntent.putExtra("watch", message);
             LocalBroadcastManager.getInstance(this).sendBroadcast(messageIntent);
         } else {
             super.onMessageReceived(messageEvent);

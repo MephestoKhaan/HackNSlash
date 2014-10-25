@@ -10,8 +10,10 @@ import android.widget.TextView;
 
 public class HandheldActivity extends Activity implements MessageReceiverListener {
 
+    boolean isServer;
+
     private TextView mTextView;
-    private DataCommunicator dataCommunicator;
+    private HandeldToWatchCommunicator handeldToWatchCommunicator;
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -19,7 +21,7 @@ public class HandheldActivity extends Activity implements MessageReceiverListene
         setContentView(R.layout.activity_handeld);
 
         mTextView = (TextView) findViewById(R.id.textView);
-        dataCommunicator = new DataCommunicator(this,this);
+        handeldToWatchCommunicator = new HandeldToWatchCommunicator(this,this);
     }
 
 
@@ -45,12 +47,12 @@ public class HandheldActivity extends Activity implements MessageReceiverListene
     protected void onStart()
     {
         super.onStart();
-        dataCommunicator.Connect(true);
+        handeldToWatchCommunicator.Connect(true);
     }
     @Override
     protected void onStop()
     {
-        dataCommunicator.Connect(false);
+        handeldToWatchCommunicator.Connect(false);
         super.onStop();
     }
 
