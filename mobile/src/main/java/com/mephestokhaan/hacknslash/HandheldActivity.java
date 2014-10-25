@@ -20,29 +20,17 @@ import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.Wearable;
 
 
-public class HandheldActivity extends Activity implements
-        GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener {
+public class HandheldActivity extends Activity implements MessageReceiverListener {
 
-    GoogleApiClient googleClient;
     private TextView mTextView;
-
+    private DataCommunicator dataCommunicator;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_handeld);
 
         mTextView = (TextView) findViewById(R.id.textView);
-        googleClient = new GoogleApiClient.Builder(this)
-                .addApi(Wearable.API)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .build();
-
-
-        IntentFilter messageFilter = new IntentFilter(Intent.ACTION_SEND);
-        MessageReceiver messageReceiver = new MessageReceiver();
-        LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, messageFilter);
+        dataCommunicator = new DataCommunicator(this,this);
     }
 
 
@@ -65,70 +53,22 @@ public class HandheldActivity extends Activity implements
         return super.onOptionsItemSelected(item);
     }
 
-    public class MessageReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String message = intent.getStringExtra("message");
-            // Display message in UI
-            mTextView.setText(message);
-        }
+    @Override
+    public void onMessageReceived(String msg)
+    {
+        mTextView.setText(msg);
     }
-
-
 
     // Connect to the data layer when the Activity starts
     @Override
     protected void onStart() {
         super.onStart();
-        googleClient.connect();
+        dataCommunicator.Connect(true);
     }
-
-    // Send a message when the data layer connection is successful.
     @Override
-    public void onConnected(Bundle connectionHint) {
-        String message = "Hello wearable\n Via the data layer";
-        new SendToDataLayerThread("/message_path", message).start();
-    }
-
-    // Disconnect from the data layer when the Activity stops
-    @Override
-    protected void onStop() {
-        if (null != googleClient && googleClient.isConnected()) {
-            googleClient.disconnect();
-        }
+    protected void onStop()
+    {
+        dataCommunicator.Connect(false);
         super.onStop();
-    }
-
-    // Placeholders for required connection callbacks
-    @Override
-    public void onConnectionSuspended(int cause) { }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) { }
-
-    class SendToDataLayerThread extends Thread {
-        String path;
-        String message;
-
-        // Constructor to send a message to the data layer
-        SendToDataLayerThread(String p, String msg) {
-            path = p;
-            message = msg;
-        }
-
-        public void run() {
-
-            NodeApi.GetConnectedNodesResult nodes = Wearable.NodeApi.getConnectedNodes(googleClient).await();
-            for (Node node : nodes.getNodes()) {
-                MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(googleClient, node.toString(), path, message.getBytes()).await();
-                if (result.getStatus().isSuccess()) {
-                    Log.v("myTag", "Message: {" + message + "} sent to: " + node.getDisplayName());
-                }
-                else {
-                    // Log an error
-                    Log.v("myTag", "ERROR: failed to send Message");
-                }
-            }
-        }
     }
 }
