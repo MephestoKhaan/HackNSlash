@@ -101,10 +101,18 @@ public class WearActivity extends Activity implements SensorEventListener, Messa
     {
         float acceleration = (float)Math.sqrt(Math.pow(event.values[0], 2) + Math.pow(event.values[1], 2) + Math.pow(event.values[2], 2)) - 9.81f;
         acceleration /= 10f;
-        hitDetector.AddAccelerationPeak(acceleration);
+       if( hitDetector.AddAccelerationPeak(acceleration))
+       {
+           SendHit();
+       }
         if(accelerationView != null) {
             accelerationView.SetPercentage(acceleration);
         }
+    }
+
+    public void SendHit()
+    {
+        dataCommunicator.SendMessage("HIT at " + System.currentTimeMillis());
     }
 
     @Override
@@ -166,16 +174,12 @@ public class WearActivity extends Activity implements SensorEventListener, Messa
 
         protected void onProgressUpdate(double[]... toTransform)
         {
-            float averageLowFreqAudio = 0f;
-            //int examples = 1;
-           // for (int i = 0; i < examples; i++) {
-           //     if(averageLowFreqAudio < toTransform[0][i]) {
-                    averageLowFreqAudio = (float)toTransform[0][1];
-           //     }
-           // }
-            //averageLowFreqAudio /=examples;
+            float averageLowFreqAudio = (float)toTransform[0][1];
             averageLowFreqAudio = Math.abs(averageLowFreqAudio);
-            hitDetector.AddAudioPeak(averageLowFreqAudio);
+            if(hitDetector.AddAudioPeak(averageLowFreqAudio))
+            {
+                SendHit();
+            }
             if(audioView != null)
             {
                 audioView.SetPercentage(averageLowFreqAudio);

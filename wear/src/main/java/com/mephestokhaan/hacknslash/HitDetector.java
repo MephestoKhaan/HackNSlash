@@ -7,8 +7,8 @@ import android.util.Log;
  */
 public class HitDetector {
 
-    private long maxDelay = 30;
-    private long interPeakWait = 3000;
+    private long maxDelay = 25;
+    private long interPeakWait = 300;
 
     private long lastPeak;
     private long lastAccelerationPeakTime;

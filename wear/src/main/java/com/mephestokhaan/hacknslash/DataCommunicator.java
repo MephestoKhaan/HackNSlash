@@ -40,7 +40,8 @@ public class DataCommunicator implements  GoogleApiClient.ConnectionCallbacks, G
 
     public void Connect(boolean connect)
     {
-        if(googleClient == null) {
+        if(googleClient == null)
+        {
             return;
         }
 
@@ -54,12 +55,14 @@ public class DataCommunicator implements  GoogleApiClient.ConnectionCallbacks, G
         }
     }
 
-    @Override
-    public void onConnected(Bundle connectionHint)
+    public void SendMessage(String msg)
     {
-        String message = "Hello wearable\n Via the data layer";
-        new SendToDataLayerThread("/message_path", message).start();
+        new SendToDataLayerThread("/message_path", msg).start();
     }
+
+
+    @Override
+    public void onConnected(Bundle connectionHint) {}
     @Override
     public void onConnectionSuspended(int cause){}
     @Override
@@ -89,7 +92,8 @@ public class DataCommunicator implements  GoogleApiClient.ConnectionCallbacks, G
             message = msg;
         }
 
-        public void run() {
+        public void run()
+        {
 
             NodeApi.GetConnectedNodesResult nodes = Wearable.NodeApi.getConnectedNodes(googleClient).await();
             for (Node node : nodes.getNodes())
