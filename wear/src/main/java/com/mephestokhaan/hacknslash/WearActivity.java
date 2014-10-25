@@ -30,7 +30,7 @@ public class WearActivity extends Activity implements SensorEventListener, Messa
     private TextView mTextView;
 
     private SensorManager mSensorManager;
-    private HitDetector hitDetector = new HitDetector();
+    private SlashDetector slashDetector = new SlashDetector();
     private DataCommunicator dataCommunicator;
 
     @Override
@@ -101,7 +101,7 @@ public class WearActivity extends Activity implements SensorEventListener, Messa
     {
         float acceleration = (float)Math.sqrt(Math.pow(event.values[0], 2) + Math.pow(event.values[1], 2) + Math.pow(event.values[2], 2)) - 9.81f;
         acceleration /= 10f;
-       if( hitDetector.AddAccelerationPeak(acceleration))
+       if( slashDetector.AddAccelerationPeak(acceleration))
        {
            SendHit();
        }
@@ -176,7 +176,7 @@ public class WearActivity extends Activity implements SensorEventListener, Messa
         {
             float averageLowFreqAudio = (float)toTransform[0][1];
             averageLowFreqAudio = Math.abs(averageLowFreqAudio);
-            if(hitDetector.AddAudioPeak(averageLowFreqAudio))
+            if(slashDetector.AddAudioPeak(averageLowFreqAudio))
             {
                 SendHit();
             }

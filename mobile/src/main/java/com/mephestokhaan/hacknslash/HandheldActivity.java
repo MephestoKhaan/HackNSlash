@@ -2,22 +2,27 @@ package com.mephestokhaan.hacknslash;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
+import org.w3c.dom.Text;
 
 
-public class HandheldActivity extends Activity implements MessageReceiverListener {
+public class HandheldActivity extends Activity implements MessageReceiverListener, HitListener {
 
     private CheckBox serverCheck;
     private TextView ipText;
 
+    private TextView player1Text ,player2Text;
+    private int player1Lives, player2Lives;
+
     private HandeldToHandeldCommunicator handeldToHandeldCommunicator;
     private HandeldToWatchCommunicator handeldToWatchCommunicator;
+
+    private HitDetector hitDetector;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -27,7 +32,25 @@ public class HandheldActivity extends Activity implements MessageReceiverListene
 
         serverCheck = (CheckBox) findViewById(R.id.checkBox);
         ipText = (TextView) findViewById(R.id.iptext);
+        player1Text = (TextView) findViewById(R.id.player1lives);
+        player2Text = (TextView) findViewById(R.id.player2lives);
+
         handeldToWatchCommunicator = new HandeldToWatchCommunicator(this,this);
+
+        UpdateScores();
+    }
+
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
+        handeldToWatchCommunicator.Connect(true);
+    }
+    @Override
+    protected void onStop()
+    {
+        handeldToWatchCommunicator.Connect(false);
+        super.onStop();
     }
 
 
@@ -49,18 +72,6 @@ public class HandheldActivity extends Activity implements MessageReceiverListene
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    protected void onStart()
-    {
-        super.onStart();
-        handeldToWatchCommunicator.Connect(true);
-    }
-    @Override
-    protected void onStop()
-    {
-        handeldToWatchCommunicator.Connect(false);
-        super.onStop();
-    }
 
     public void SyncHandelds(View v)
     {
@@ -70,25 +81,71 @@ public class HandheldActivity extends Activity implements MessageReceiverListene
             handeldToHandeldCommunicator = null;
         }
         handeldToHandeldCommunicator = new HandeldToHandeldCommunicator(ipText.getText().toString(), serverCheck.isChecked(),this,this);
+
+        if(serverCheck.isChecked())
+        {
+            hitDetector = new HitDetector(this);
+        }
     }
 
-    public void sendTestMessage(View v)
+    private void UpdateScores()
     {
-        if(handeldToHandeldCommunicator != null)
-        {
-            handeldToHandeldCommunicator.SendMessage("testing");
+        player1Text.setText(""+player1Lives);
+        player2Text.setText(""+player2Lives);
+    }
+
+
+    public void Restart(View v)
+    {
+        if(serverCheck.isChecked()) {
+            player1Lives = player2Lives = 0;
+            UpdateScores();
         }
     }
 
     @Override
     public void onHandheldWatchMessageReceived(String msg)
     {
-        Log.i("WATCH SAYS: ",msg);
+        if(serverCheck.isChecked())
+        {
+            hitDetector.Player1Slashes();
+        }
+        else
+        {
+            if(handeldToHandeldCommunicator != null) {
+                handeldToHandeldCommunicator.SendMessage("slash");
+            }
+        }
     }
 
     @Override
     public void onHandHeldHandheldMessageReceived(String msg)
     {
-        Log.i("PHONE SAYS: ",msg);
+        if(msg == "slash")
+        {
+            if(serverCheck.isChecked())
+            {
+                hitDetector.Player2Slashes();
+            }
+        }
+    }
+
+    @Override
+    public void onHitDetected(int player)
+    {
+        switch (player)
+        {
+            case 1:
+                player1Lives++;
+                break;
+            case 2:
+                player2Lives++;
+                break;
+            default:
+                break;
+        }
+
+        UpdateScores();
+
     }
 }

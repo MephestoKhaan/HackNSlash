@@ -5,7 +5,7 @@ import android.util.Log;
 /**
  * Created by MephestoKhaan on 25/10/2014.
  */
-public class HitDetector {
+public class SlashDetector {
 
     private long maxDelay = 25;
     private long interPeakWait = 300;
@@ -14,8 +14,6 @@ public class HitDetector {
     private long lastAccelerationPeakTime;
     private long lastAudioPeakTime;
 
-    private float lastAudio = 0;
-    private float lastAcceleration = 0;
     private float accelerationThresold = 1f;
     private float audioThresold = 0.7f;
 
@@ -27,7 +25,6 @@ public class HitDetector {
         }
 
         lastAccelerationPeakTime = System.currentTimeMillis();
-        lastAcceleration = acceleration;
         return ComparePeaks();
     }
 
@@ -38,10 +35,7 @@ public class HitDetector {
             return false;
         }
 
-        //Log.i("AUDIO",""+ audio);
-
         lastAudioPeakTime = System.currentTimeMillis();
-        lastAudio = audio;
         return ComparePeaks();
     }
 
@@ -50,7 +44,6 @@ public class HitDetector {
         if(Math.abs(lastPeak - System.currentTimeMillis()) > interPeakWait
                 &&  Math.abs(lastAccelerationPeakTime - lastAudioPeakTime) < maxDelay)
         {
-            //Log.i("HIT", ""+Math.abs(lastAccelerationPeakTime - lastAudioPeakTime)+ " AUDIO: "+lastAudio + " ACC: "+lastAcceleration);
             lastPeak = System.currentTimeMillis();
             return true;
         }
