@@ -21,17 +21,9 @@ import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.wearable.view.WatchViewStub;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.wearable.MessageApi;
-import com.google.android.gms.wearable.Node;
-import com.google.android.gms.wearable.NodeApi;
-import com.google.android.gms.wearable.Wearable;
 import com.mephestokhaan.fft.RealDoubleFFT;
 
 public class WearActivity extends Activity implements SensorEventListener {
@@ -114,7 +106,7 @@ public class WearActivity extends Activity implements SensorEventListener {
     public void onSensorChanged(SensorEvent event) {
 
         double mod = Math.sqrt(Math.pow(event.values[0],2) + Math.pow(event.values[1],2) + Math.pow(event.values[2],2)) - gravity;
-        mTextView.setText(""+mod);
+        //mTextView.setText(""+mod);
     }
 
     @Override
