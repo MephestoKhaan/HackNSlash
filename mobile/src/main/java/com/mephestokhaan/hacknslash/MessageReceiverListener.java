@@ -5,5 +5,6 @@ package com.mephestokhaan.hacknslash;
  */
 public interface MessageReceiverListener
 {
-    public void onMessageReceived(String msg);
+    public void onHandheldWatchMessageReceived(String msg);
+    public void onHandHeldHandheldMessageReceived(String msg);
 }

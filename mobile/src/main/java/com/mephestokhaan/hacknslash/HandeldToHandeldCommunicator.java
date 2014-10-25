@@ -5,9 +5,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import android.content.Context;
-import android.content.Intent;
 import android.os.AsyncTask;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 /**
@@ -21,14 +19,17 @@ class HandeldToHandeldCommunicator
     private boolean isServer;
     private boolean listening = true;
 
+    MessageReceiverListener messageDelegate;
+
     private UDPReceiver receiver = new UDPReceiver();
 
-    public HandeldToHandeldCommunicator(String ip, boolean isServer, Context context)
+    public HandeldToHandeldCommunicator(String ip, boolean isServer, Context context, MessageReceiverListener delegate)
     {
         this.IP = ip;
         this.isServer = isServer;
         this.context = context;
         this.listening = true;
+        this.messageDelegate = delegate;
 
         receiver.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
@@ -41,7 +42,6 @@ class HandeldToHandeldCommunicator
 
     public void SendMessage(String message)
     {
-        Log.i("SENDA:",message +" "+ IP + " " + isServer);
         new UDPSender().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,message);
     }
 
@@ -65,14 +65,12 @@ class HandeldToHandeldCommunicator
             return null;
         }
 
-        private void sendOverUDP(InetAddress IP, int PORT, String message) throws IOException {
-
-            Log.i("SEND:",message);
+        private void sendOverUDP(InetAddress IP, int PORT, String message) throws IOException
+        {
             DatagramSocket socket = new DatagramSocket(PORT);
             socket.setBroadcast(true);
             DatagramPacket packet = new DatagramPacket(message.getBytes(), message.length(), IP, PORT);
             socket.send(packet);
-            Log.i("SEND:",message);
             socket.close();
         }
 
@@ -99,11 +97,11 @@ class HandeldToHandeldCommunicator
                 {
                     ds.receive(dp);
                     String message =  new String(lMsg, 0, dp.getLength());
-                    Log.i("RECEIVED",message);
-                    Intent messageIntent = new Intent();
-                    messageIntent.putExtra("handheld", message);
-                    messageIntent.setAction(Intent.ACTION_SEND);
-                    LocalBroadcastManager.getInstance(context).sendBroadcast(messageIntent);
+                    if(messageDelegate != null)
+                    {
+                        //TODO should be on main thread?
+                        messageDelegate.onHandHeldHandheldMessageReceived(message);
+                    }
                 }
             }
             catch (Exception e)

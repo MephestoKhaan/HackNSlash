@@ -77,7 +77,7 @@ public class HandeldToWatchCommunicator implements  GoogleApiClient.ConnectionCa
             if(message !=null
             && messageDelegate != null)
             {
-                messageDelegate.onMessageReceived(message);
+                messageDelegate.onHandheldWatchMessageReceived(message);
             }
         }
     }

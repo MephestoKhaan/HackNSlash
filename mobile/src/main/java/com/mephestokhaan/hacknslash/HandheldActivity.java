@@ -2,6 +2,7 @@ package com.mephestokhaan.hacknslash;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -11,8 +12,6 @@ import android.widget.TextView;
 
 
 public class HandheldActivity extends Activity implements MessageReceiverListener {
-
-    boolean isServer;
 
     private CheckBox serverCheck;
     private TextView ipText;
@@ -70,7 +69,7 @@ public class HandheldActivity extends Activity implements MessageReceiverListene
             handeldToHandeldCommunicator.Stop();
             handeldToHandeldCommunicator = null;
         }
-        handeldToHandeldCommunicator = new HandeldToHandeldCommunicator(ipText.getText().toString(), serverCheck.isChecked(),this);
+        handeldToHandeldCommunicator = new HandeldToHandeldCommunicator(ipText.getText().toString(), serverCheck.isChecked(),this,this);
     }
 
     public void sendTestMessage(View v)
@@ -82,8 +81,14 @@ public class HandheldActivity extends Activity implements MessageReceiverListene
     }
 
     @Override
-    public void onMessageReceived(String msg)
+    public void onHandheldWatchMessageReceived(String msg)
     {
+        Log.i("WATCH SAYS: ",msg);
+    }
 
+    @Override
+    public void onHandHeldHandheldMessageReceived(String msg)
+    {
+        Log.i("PHONE SAYS: ",msg);
     }
 }
