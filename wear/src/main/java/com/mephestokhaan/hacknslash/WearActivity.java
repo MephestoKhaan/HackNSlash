@@ -1,13 +1,7 @@
 package com.mephestokhaan.hacknslash;
 
 import android.app.Activity;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -19,7 +13,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.wearable.view.WatchViewStub;
 import android.util.Log;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.mephestokhaan.fft.RealDoubleFFT;
@@ -36,11 +29,11 @@ public class WearActivity extends Activity implements SensorEventListener, Messa
     private int blockSize = 256;
     private boolean started = false;
 
+
+    private DrawView accelerationView;
+    private DrawView audioView;
+
     private AudioAnalyzer audioAnalyzerTask;
-    private ImageView imageViewDisplaySectrum;
-    private Bitmap bitmapDisplaySpectrum;
-    private Canvas canvasDisplaySpectrum;
-    private Paint paintSpectrumDisplay;
 
     private float gravity = 9.81f;
     private TextView mTextView;
@@ -59,13 +52,11 @@ public class WearActivity extends Activity implements SensorEventListener, Messa
             @Override
             public void onLayoutInflated(WatchViewStub stub) {
                 mTextView = (TextView) stub.findViewById(R.id.text);
+                audioView = (DrawView) stub.findViewById(R.id.audioView);
+                accelerationView = (DrawView) stub.findViewById(R.id.accelerationView);
 
-                imageViewDisplaySectrum = (ImageView) findViewById(R.id.imageView);
-                bitmapDisplaySpectrum = Bitmap.createBitmap(256,150,Bitmap.Config.ARGB_8888);
-                canvasDisplaySpectrum = new Canvas(bitmapDisplaySpectrum);
-                paintSpectrumDisplay = new Paint();
-                paintSpectrumDisplay.setColor(Color.GREEN);
-                imageViewDisplaySectrum.setImageBitmap(bitmapDisplaySpectrum);
+                audioView.SetProperties(Color.RED, true);
+                accelerationView.SetProperties(Color.BLUE,false);
             }
         });
 
@@ -116,7 +107,11 @@ public class WearActivity extends Activity implements SensorEventListener, Messa
     @Override
     public void onSensorChanged(SensorEvent event)
     {
-        double mod = Math.sqrt(Math.pow(event.values[0],2) + Math.pow(event.values[1],2) + Math.pow(event.values[2],2)) - gravity;
+        double mod = Math.sqrt(Math.pow(event.values[0], 2) + Math.pow(event.values[1], 2) + Math.pow(event.values[2], 2)) - gravity;
+
+        if(accelerationView != null) {
+            accelerationView.SetPercentage((float) mod / 10f);
+        }
     }
 
     @Override
@@ -173,16 +168,19 @@ public class WearActivity extends Activity implements SensorEventListener, Messa
             return null;
         }
 
-        protected void onProgressUpdate(double[]... toTransform) {
-            canvasDisplaySpectrum.drawColor(Color.BLACK);
-            for (int i = 0; i < toTransform[0].length-1; i++) {
-                int ya = (int)(toTransform[0][i] * 100);
-                int yb = (int)(toTransform[0][i+1] * 100);
-                canvasDisplaySpectrum.drawLine(i, ya, i+1, yb, paintSpectrumDisplay);
+        protected void onProgressUpdate(double[]... toTransform)
+        {
+            float averageLowFreqAudio = 0f;
+            int examples = 20;
+            for (int i = 0; i < examples; i++) {
+                averageLowFreqAudio += (toTransform[0][i] * 100);
             }
-
-            imageViewDisplaySectrum.invalidate();
-
+            averageLowFreqAudio /=examples;
+            Log.e("NOISE",""+averageLowFreqAudio);
+            if(audioView != null)
+            {
+                audioView.SetPercentage(Math.abs(averageLowFreqAudio) / 30f);
+            }
         }
 
         protected void onPostExecute(Void result) {
