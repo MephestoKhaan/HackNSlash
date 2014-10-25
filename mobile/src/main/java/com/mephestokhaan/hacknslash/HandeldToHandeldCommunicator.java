@@ -17,20 +17,20 @@ import android.util.Log;
 class HandeldToHandeldCommunicator
 {
     private Context context;
-    private String IP, PORT;
+    private String IP;
+    private boolean isServer;
     private boolean listening = true;
 
     private UDPReceiver receiver = new UDPReceiver();
 
-    public HandeldToHandeldCommunicator(String ip, String port, Context context)
+    public HandeldToHandeldCommunicator(String ip, boolean isServer, Context context)
     {
         this.IP = ip;
-        this.PORT = port;
+        this.isServer = isServer;
         this.context = context;
         this.listening = true;
 
-        receiver.execute();
-
+        receiver.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     public void Stop()
@@ -41,23 +41,24 @@ class HandeldToHandeldCommunicator
 
     public void SendMessage(String message)
     {
-        new UDPSender().execute(message);
+        Log.i("SENDA:",message +" "+ IP + " " + isServer);
+        new UDPSender().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,message);
     }
 
     class UDPSender extends AsyncTask<String, Void, Void>
     {
         protected Void doInBackground(String... urls)
         {
-            if (urls.length > 0)
+            if (urls.length > 0 )
             {
                 try
                 {
                     String ip = IP;
-                    int port = Integer.parseInt(PORT);
+                    int port = isServer?4444:4445;
                     String message = urls[0];
                     sendOverUDP(InetAddress.getByName(ip), port, message);
                 } catch (IOException e) {
-                    Log.e("SEND", "error sendig " + urls[0]);
+                    Log.e("SEND", "error sending " + urls[0] + e.toString());
                 }
             }
 
@@ -66,13 +67,20 @@ class HandeldToHandeldCommunicator
 
         private void sendOverUDP(InetAddress IP, int PORT, String message) throws IOException {
 
+            Log.i("SEND:",message);
             DatagramSocket socket = new DatagramSocket(PORT);
             socket.setBroadcast(true);
             DatagramPacket packet = new DatagramPacket(message.getBytes(), message.length(), IP, PORT);
             socket.send(packet);
+            Log.i("SEND:",message);
             socket.close();
         }
-    };
+
+        protected void onPostExecute(Void feed)
+        {
+
+        }
+    }
 
     class UDPReceiver extends AsyncTask<Void, Void, Void>
     {
@@ -85,14 +93,15 @@ class HandeldToHandeldCommunicator
 
             try
             {
-                ds = new DatagramSocket(Integer.parseInt(PORT));
+                ds = new DatagramSocket(isServer?4445:4444);
 
                 while(listening)
                 {
                     ds.receive(dp);
-
+                    String message =  new String(lMsg, 0, dp.getLength());
+                    Log.i("RECEIVED",message);
                     Intent messageIntent = new Intent();
-                    messageIntent.putExtra("handheld", new String(lMsg, 0, dp.getLength()));
+                    messageIntent.putExtra("handheld", message);
                     messageIntent.setAction(Intent.ACTION_SEND);
                     LocalBroadcastManager.getInstance(context).sendBroadcast(messageIntent);
                 }
@@ -111,7 +120,7 @@ class HandeldToHandeldCommunicator
 
             return null;
         }
-    };
+    }
 
 }
 

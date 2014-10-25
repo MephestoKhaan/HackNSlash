@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.CheckBox;
 import android.widget.TextView;
 
 
@@ -12,15 +14,20 @@ public class HandheldActivity extends Activity implements MessageReceiverListene
 
     boolean isServer;
 
-    private TextView mTextView;
+    private CheckBox serverCheck;
+    private TextView ipText;
+
+    private HandeldToHandeldCommunicator handeldToHandeldCommunicator;
     private HandeldToWatchCommunicator handeldToWatchCommunicator;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_handeld);
 
-        mTextView = (TextView) findViewById(R.id.textView);
+        serverCheck = (CheckBox) findViewById(R.id.checkBox);
+        ipText = (TextView) findViewById(R.id.iptext);
         handeldToWatchCommunicator = new HandeldToWatchCommunicator(this,this);
     }
 
@@ -56,9 +63,27 @@ public class HandheldActivity extends Activity implements MessageReceiverListene
         super.onStop();
     }
 
+    public void SyncHandelds(View v)
+    {
+        if(handeldToHandeldCommunicator != null)
+        {
+            handeldToHandeldCommunicator.Stop();
+            handeldToHandeldCommunicator = null;
+        }
+        handeldToHandeldCommunicator = new HandeldToHandeldCommunicator(ipText.getText().toString(), serverCheck.isChecked(),this);
+    }
+
+    public void sendTestMessage(View v)
+    {
+        if(handeldToHandeldCommunicator != null)
+        {
+            handeldToHandeldCommunicator.SendMessage("testing");
+        }
+    }
+
     @Override
     public void onMessageReceived(String msg)
     {
-        mTextView.setText(msg);
+
     }
 }
