@@ -20,26 +20,17 @@ import com.mephestokhaan.fft.RealDoubleFFT;
 public class WearActivity extends Activity implements SensorEventListener, MessageReceiverListener
 {
 
-    private int frequency = 8000;
-    private int channelConfiguration = AudioFormat.CHANNEL_CONFIGURATION_MONO;
-    private int audioEncoding = AudioFormat.ENCODING_PCM_16BIT;
-
-    private AudioRecord audioRecord;
     private RealDoubleFFT transformer;
     private int blockSize = 256;
-    private boolean started = false;
-
-    private double lastAcceleration = 0f;
+    private boolean recordingStarted = false;
+    private AudioAnalyzer audioAnalyzerTask;
 
     private DrawView accelerationView;
     private DrawView audioView;
-
-    private AudioAnalyzer audioAnalyzerTask;
-
-    private float gravity = 9.81f;
     private TextView mTextView;
-    private SensorManager mSensorManager;
 
+    private SensorManager mSensorManager;
+    private HitDetector hitDetector = new HitDetector();
     private DataCommunicator dataCommunicator;
 
     @Override
@@ -64,7 +55,7 @@ public class WearActivity extends Activity implements SensorEventListener, Messa
 
         transformer = new RealDoubleFFT(blockSize);
 
-        started = true;
+        recordingStarted = true;
         audioAnalyzerTask = new AudioAnalyzer();
         audioAnalyzerTask.execute();
 
@@ -108,10 +99,11 @@ public class WearActivity extends Activity implements SensorEventListener, Messa
     @Override
     public void onSensorChanged(SensorEvent event)
     {
-        double mod = Math.sqrt(Math.pow(event.values[0], 2) + Math.pow(event.values[1], 2) + Math.pow(event.values[2], 2)) - gravity;
-        lastAcceleration = mod / 10f;
+        float acceleration = (float)Math.sqrt(Math.pow(event.values[0], 2) + Math.pow(event.values[1], 2) + Math.pow(event.values[2], 2)) - 9.81f;
+        acceleration /= 10f;
+        hitDetector.AddAccelerationPeak(acceleration);
         if(accelerationView != null) {
-            accelerationView.SetPercentage((float) mod / 10f);
+            accelerationView.SetPercentage(acceleration);
         }
     }
 
@@ -120,7 +112,10 @@ public class WearActivity extends Activity implements SensorEventListener, Messa
 
     private class AudioAnalyzer extends AsyncTask<Void, double[], Void>
     {
-
+        private AudioRecord audioRecord;
+        private int frequency = 8000;
+        private int channelConfiguration = AudioFormat.CHANNEL_CONFIGURATION_MONO;
+        private int audioEncoding = AudioFormat.ENCODING_PCM_16BIT;
         @Override
         protected Void doInBackground(Void... params) {
 
@@ -142,7 +137,7 @@ public class WearActivity extends Activity implements SensorEventListener, Messa
                 Log.e("Recording failed", e.toString());
 
             }
-            while (started) {
+            while (recordingStarted) {
                 bufferReadResult = audioRecord.read(buffer, 0, blockSize);
                 if(isCancelled())
                     break;
@@ -172,20 +167,20 @@ public class WearActivity extends Activity implements SensorEventListener, Messa
         protected void onProgressUpdate(double[]... toTransform)
         {
             float averageLowFreqAudio = 0f;
-            int examples = 5;
-            for (int i = 0; i < examples; i++) {
-                if(averageLowFreqAudio < toTransform[0][i]) {
-                    averageLowFreqAudio = (float)toTransform[0][i];
-                }
-            }
+            //int examples = 1;
+           // for (int i = 0; i < examples; i++) {
+           //     if(averageLowFreqAudio < toTransform[0][i]) {
+                    averageLowFreqAudio = (float)toTransform[0][1];
+           //     }
+           // }
             //averageLowFreqAudio /=examples;
             averageLowFreqAudio = Math.abs(averageLowFreqAudio);
-            if (averageLowFreqAudio > 1.0f)
-                Log.e("NOISE",""+averageLowFreqAudio + "   "+lastAcceleration);
+            hitDetector.AddAudioPeak(averageLowFreqAudio);
             if(audioView != null)
             {
                 audioView.SetPercentage(averageLowFreqAudio);
             }
+
         }
 
         protected void onPostExecute(Void result) {
