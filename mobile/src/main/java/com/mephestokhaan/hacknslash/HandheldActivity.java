@@ -1,11 +1,16 @@
 package com.mephestokhaan.hacknslash;
 
-
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -20,17 +25,24 @@ public class HandheldActivity extends Activity implements
         GoogleApiClient.OnConnectionFailedListener {
 
     GoogleApiClient googleClient;
+    private TextView mTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_handeld);
 
+        mTextView = (TextView) findViewById(R.id.textView);
         googleClient = new GoogleApiClient.Builder(this)
                 .addApi(Wearable.API)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
+
+
+        IntentFilter messageFilter = new IntentFilter(Intent.ACTION_SEND);
+        MessageReceiver messageReceiver = new MessageReceiver();
+        LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, messageFilter);
     }
 
 
@@ -53,8 +65,14 @@ public class HandheldActivity extends Activity implements
         return super.onOptionsItemSelected(item);
     }
 
-
-
+    public class MessageReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String message = intent.getStringExtra("message");
+            // Display message in UI
+            mTextView.setText(message);
+        }
+    }
 
 
 
@@ -69,7 +87,7 @@ public class HandheldActivity extends Activity implements
     @Override
     public void onConnected(Bundle connectionHint) {
         String message = "Hello wearable\n Via the data layer";
-        new SendToDataLayerThread("/message_path", message).start();
+       // new SendToDataLayerThread("/message_path", message).start();
     }
 
     // Disconnect from the data layer when the Activity stops
