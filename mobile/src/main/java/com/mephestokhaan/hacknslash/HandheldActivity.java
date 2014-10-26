@@ -90,8 +90,12 @@ public class HandheldActivity extends Activity implements MessageReceiverListene
 
     private void UpdateScores()
     {
-        player1Text.setText(""+player1Lives);
-        player2Text.setText(""+player2Lives);
+        this.runOnUiThread(new Runnable() {
+            public void run() {
+                player1Text.setText(""+player1Lives);
+                player2Text.setText(""+player2Lives);
+            }
+        });
     }
 
 
@@ -99,6 +103,7 @@ public class HandheldActivity extends Activity implements MessageReceiverListene
     {
         if(serverCheck.isChecked()) {
             player1Lives = player2Lives = 0;
+
             UpdateScores();
         }
     }
@@ -121,7 +126,7 @@ public class HandheldActivity extends Activity implements MessageReceiverListene
     @Override
     public void onHandHeldHandheldMessageReceived(String msg)
     {
-        if(msg == "slash")
+        if(msg.equalsIgnoreCase("slash"))
         {
             if(serverCheck.isChecked())
             {

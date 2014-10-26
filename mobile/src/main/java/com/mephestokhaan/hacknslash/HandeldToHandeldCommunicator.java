@@ -16,6 +16,7 @@ class HandeldToHandeldCommunicator
 {
     private Context context;
     private String IP;
+    private int PORT;
     private boolean isServer;
     private boolean listening = true;
 
@@ -25,7 +26,8 @@ class HandeldToHandeldCommunicator
 
     public HandeldToHandeldCommunicator(String ip, boolean isServer, Context context, MessageReceiverListener delegate)
     {
-        this.IP = ip;
+        this.IP = ip.split(":")[0];
+        this.PORT = Integer.parseInt(ip.split(":")[1]);
         this.isServer = isServer;
         this.context = context;
         this.listening = true;
@@ -42,7 +44,7 @@ class HandeldToHandeldCommunicator
 
     public void SendMessage(String message)
     {
-        new UDPSender().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,message);
+        new UDPSender().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, message);
     }
 
     class UDPSender extends AsyncTask<String, Void, Void>
@@ -54,7 +56,7 @@ class HandeldToHandeldCommunicator
                 try
                 {
                     String ip = IP;
-                    int port = isServer?4444:4445;
+                    int port = isServer?PORT:PORT+1;
                     String message = urls[0];
                     sendOverUDP(InetAddress.getByName(ip), port, message);
                 } catch (IOException e) {
@@ -69,6 +71,7 @@ class HandeldToHandeldCommunicator
         {
             DatagramSocket socket = new DatagramSocket(PORT);
             socket.setBroadcast(true);
+            socket.setReuseAddress(true);
             DatagramPacket packet = new DatagramPacket(message.getBytes(), message.length(), IP, PORT);
             socket.send(packet);
             socket.close();
@@ -91,7 +94,7 @@ class HandeldToHandeldCommunicator
 
             try
             {
-                ds = new DatagramSocket(isServer?4445:4444);
+                ds = new DatagramSocket(isServer?PORT+1:PORT);
 
                 while(listening)
                 {

@@ -14,8 +14,8 @@ public class SlashDetector {
     private long lastAccelerationPeakTime;
     private long lastAudioPeakTime;
 
-    private float accelerationThresold = 1f;
-    private float audioThresold = 0.7f;
+    private float accelerationThresold = 0.7f;
+    private float audioThresold = 0.5f;
 
     public boolean AddAccelerationPeak(float acceleration)
     {

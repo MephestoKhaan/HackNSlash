@@ -2,6 +2,7 @@ package com.mephestokhaan.hacknslash;
 
 
 import android.os.Handler;
+import android.util.Log;
 
 /**
  * Created by MephestoKhaan on 25/10/2014.
@@ -9,7 +10,7 @@ import android.os.Handler;
 public class HitDetector
 {
     private HitListener delegate;
-    private long maxClashDelay = 100;
+    private long maxClashDelay = 400;
     private long expectedClientDelay = 100;
 
     private long lastPlayer1Slash;
@@ -26,17 +27,18 @@ public class HitDetector
     {
         handler.removeCallbacks(runnable);
         lastPlayer1Slash = System.currentTimeMillis();
+        Log.i("PLAYER 1", "" + lastPlayer1Slash);
         int clash = SlashesClash();
         if(clash != 0)
+        {
+            handler.postDelayed(runnable,maxClashDelay+expectedClientDelay);
+        }
+        else
         {
             if(this.delegate != null)
             {
                 this.delegate.onHitDetected(clash);
             }
-        }
-        else
-        {
-            handler.postDelayed(runnable,maxClashDelay+expectedClientDelay);
         }
     }
 
@@ -44,24 +46,26 @@ public class HitDetector
     {
         handler.removeCallbacks(runnable);
         lastPlayer2Slash = System.currentTimeMillis() - expectedClientDelay;
+        Log.i("PLAYER 2", "" + (lastPlayer2Slash + expectedClientDelay));
         int clash = SlashesClash();
         if(clash != 0)
+        {
+            handler.postDelayed(runnable,maxClashDelay);
+        }
+        else
         {
             if(this.delegate != null)
             {
                 this.delegate.onHitDetected(clash);
             }
         }
-        else
-        {
-            handler.postDelayed(runnable,maxClashDelay);
-        }
     }
 
 
     public int SlashesClash()
     {
-        if(Math.abs(lastPlayer1Slash - lastPlayer2Slash) < maxClashDelay)
+        long difference = Math.abs(lastPlayer1Slash - lastPlayer2Slash);
+        if(difference < maxClashDelay)
         {
             return 0;
         }
@@ -72,9 +76,10 @@ public class HitDetector
     private void ClashTimedOut()
     {
         int hit = SlashesClash();
-        if(this.delegate != null)
-        {
+        if (this.delegate != null) {
             this.delegate.onHitDetected(hit);
+            lastPlayer2Slash = 0;
+            lastPlayer1Slash = 0;
         }
     }
 

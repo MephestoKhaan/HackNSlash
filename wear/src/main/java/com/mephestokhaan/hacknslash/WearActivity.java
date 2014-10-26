@@ -67,6 +67,7 @@ public class WearActivity extends Activity implements SensorEventListener, Messa
     protected void onStart()
     {
         super.onStart();
+        recordingStarted = true;
         registerDetector();
         dataCommunicator.Connect(true);
     }
@@ -74,6 +75,7 @@ public class WearActivity extends Activity implements SensorEventListener, Messa
     @Override
     protected void onStop()
     {
+        recordingStarted = false;
         unregisterDetector();
         dataCommunicator.Connect(false);
         super.onStop();
