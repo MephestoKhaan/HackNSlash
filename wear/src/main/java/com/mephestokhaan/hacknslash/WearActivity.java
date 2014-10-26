@@ -22,7 +22,9 @@ import com.mephestokhaan.fft.RealDoubleFFT;
 
 public class WearActivity extends Activity implements SensorEventListener, MessageReceiverListener
 {
-    private boolean BLACK_WATCH = true;
+    private boolean BLACK_WATCH = false;
+
+    public long syncronizedMilis;
 
     private RealDoubleFFT transformer;
     private int blockSize = 256;
@@ -154,7 +156,15 @@ public class WearActivity extends Activity implements SensorEventListener, Messa
 
     public void SendHit()
     {
-        dataCommunicator.SendMessage("slash");
+        if(repeatButton.getVisibility() == View.INVISIBLE)
+        {
+            dataCommunicator.SendMessage("slash:"+(System.currentTimeMillis() - syncronizedMilis));
+        }
+        else
+        {
+            dataCommunicator.SendMessage("repeat");
+            syncronizedMilis = System.currentTimeMillis();
+        }
     }
 
     @Override
@@ -221,6 +231,7 @@ public class WearActivity extends Activity implements SensorEventListener, Messa
             if(slashDetector.AddAudioPeak(averageLowFreqAudio))
             {
                 SendHit();
+
             }
             if(audioView != null)
             {

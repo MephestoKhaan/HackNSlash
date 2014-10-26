@@ -20,7 +20,8 @@ public class HandheldActivity extends Activity implements MessageReceiverListene
     private LinearLayout serverOptions;
     private TextView player1Text ,player2Text;
     private int player1Lives, player2Lives;
-    private boolean player1repeatrequested, player2repeatrequested;
+
+    private long player1repeatrequested, player2repeatrequested;
 
     private HandeldToHandeldCommunicator handeldToHandeldCommunicator;
     private HandeldToWatchCommunicator handeldToWatchCommunicator;
@@ -129,9 +130,11 @@ public class HandheldActivity extends Activity implements MessageReceiverListene
 
     private void TryRepeat()
     {
-        if(player2repeatrequested && player1repeatrequested)
+        if(Math.abs(player2repeatrequested - player1repeatrequested) < 1000
+                && player2repeatrequested != 0
+                && player1repeatrequested != 0)
         {
-            player2repeatrequested = player1repeatrequested = false;
+            player2repeatrequested = player1repeatrequested = 0;
             Restart(null);
         }
     }
@@ -154,7 +157,6 @@ public class HandheldActivity extends Activity implements MessageReceiverListene
                 int clientDelay = Integer.parseInt(clientDelayText.getText().toString());
 
                 hitDetector.maxClashDelay = clashDelay;
-                hitDetector.expectedClientDelay = clientDelay;
             }
 
             handeldToWatchCommunicator.SendMessage("start");
@@ -169,11 +171,11 @@ public class HandheldActivity extends Activity implements MessageReceiverListene
         if(serverCheck.isChecked())
         {
             if(msg.contains("slash")) {
-                hitDetector.Player1Slashes();
+                hitDetector.Player1Slashes(msg.split(":")[1]);
             }
             else if(msg.contains("repeat"))
             {
-                player1repeatrequested = true;
+                player1repeatrequested = System.currentTimeMillis();
                 TryRepeat();
             }
         }
@@ -190,12 +192,12 @@ public class HandheldActivity extends Activity implements MessageReceiverListene
         {
             if(serverCheck.isChecked())
             {
-                hitDetector.Player2Slashes();
+                hitDetector.Player2Slashes(msg.split(":")[1]);
             }
         }
         else if(msg.contains("repeat"))
         {
-            player2repeatrequested = true;
+            player2repeatrequested = System.currentTimeMillis();
             TryRepeat();
         }else{
             handeldToWatchCommunicator.SendMessage(msg);
