@@ -8,7 +8,7 @@ import android.view.View;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
+import android.widget.Toast;
 
 
 public class HandheldActivity extends Activity implements MessageReceiverListener, HitListener {
@@ -165,6 +165,7 @@ public class HandheldActivity extends Activity implements MessageReceiverListene
     @Override
     public void onHandheldWatchMessageReceived(String msg)
     {
+        Toast.makeText(this,msg,Toast.LENGTH_SHORT).show();
         if(serverCheck.isChecked())
         {
             if(msg.contains("slash")) {

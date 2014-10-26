@@ -11,7 +11,7 @@ public class HitDetector
 {
     private HitListener delegate;
     public long maxClashDelay = 400;
-    public long expectedClientDelay = 100;
+    public long expectedClientDelay = 200;
 
     private long lastPlayer1Slash;
     private long lastPlayer2Slash;
