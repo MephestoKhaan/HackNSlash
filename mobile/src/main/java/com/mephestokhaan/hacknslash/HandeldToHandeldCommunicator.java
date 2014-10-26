@@ -22,6 +22,7 @@ class HandeldToHandeldCommunicator
 
     MessageReceiverListener messageDelegate;
 
+    private DatagramSocket sendSocked;
     private UDPReceiver receiver = new UDPReceiver();
 
     public HandeldToHandeldCommunicator(String ip, boolean isServer, Context context, MessageReceiverListener delegate)
@@ -34,10 +35,19 @@ class HandeldToHandeldCommunicator
         this.messageDelegate = delegate;
 
         receiver.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        try {
+            sendSocked = new DatagramSocket(isServer ? PORT : PORT + 1);
+            sendSocked.setBroadcast(true);
+            sendSocked.setReuseAddress(true);
+        }catch (IOException e)
+        {
+            Log.e("UDP",e.toString());
+        }
     }
 
     public void Stop()
     {
+        sendSocked.close();
         listening = false;
         receiver.cancel(true);
     }
@@ -69,12 +79,8 @@ class HandeldToHandeldCommunicator
 
         private void sendOverUDP(InetAddress IP, int PORT, String message) throws IOException
         {
-            DatagramSocket socket = new DatagramSocket(PORT);
-            socket.setBroadcast(true);
-            socket.setReuseAddress(true);
             DatagramPacket packet = new DatagramPacket(message.getBytes(), message.length(), IP, PORT);
-            socket.send(packet);
-            socket.close();
+            sendSocked.send(packet);
         }
 
         protected void onPostExecute(Void feed)
