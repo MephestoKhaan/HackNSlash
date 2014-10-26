@@ -6,10 +6,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
-import android.widget.ListView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
 
 
 public class HandheldActivity extends Activity implements MessageReceiverListener, HitListener {
@@ -18,7 +17,7 @@ public class HandheldActivity extends Activity implements MessageReceiverListene
 
     private CheckBox serverCheck;
     private TextView ipText;
-    private ListView serverOptions;
+    private LinearLayout serverOptions;
     private TextView player1Text ,player2Text;
     private int player1Lives, player2Lives;
     private boolean player1repeatrequested, player2repeatrequested;
@@ -34,12 +33,15 @@ public class HandheldActivity extends Activity implements MessageReceiverListene
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_handeld);
 
+        serverOptions = (LinearLayout) findViewById(R.id.serveroptions);
         serverCheck = (CheckBox) findViewById(R.id.checkBox);
         ipText = (TextView) findViewById(R.id.iptext);
         player1Text = (TextView) findViewById(R.id.player1lives);
         player2Text = (TextView) findViewById(R.id.player2lives);
 
         handeldToWatchCommunicator = new HandeldToWatchCommunicator(this,this);
+
+        serverOptions.setVisibility(View.INVISIBLE);
 
         UpdateScores();
     }
@@ -85,6 +87,8 @@ public class HandheldActivity extends Activity implements MessageReceiverListene
             handeldToHandeldCommunicator = null;
         }
         handeldToHandeldCommunicator = new HandeldToHandeldCommunicator(ipText.getText().toString(), serverCheck.isChecked(),this,this);
+
+        serverOptions.setVisibility(serverCheck.isChecked()? View.VISIBLE: View.INVISIBLE);
 
         if(serverCheck.isChecked())
         {
@@ -139,6 +143,16 @@ public class HandheldActivity extends Activity implements MessageReceiverListene
             player1Lives = player2Lives = maxLives;
 
             UpdateScores();
+
+            TextView clashDelayText = (TextView) findViewById(R.id.clashdelay);
+            TextView clientDelayText = (TextView) findViewById(R.id.clietdelay);
+
+            int clashDelay =Integer.parseInt(clashDelayText.getText().toString());
+            int clientDelay = Integer.parseInt(clientDelayText.getText().toString());
+
+            hitDetector.maxClashDelay = clashDelay;
+            hitDetector.expectedClientDelay = clientDelay;
+
 
             handeldToWatchCommunicator.SendMessage("start");
             handeldToHandeldCommunicator.SendMessage("start");

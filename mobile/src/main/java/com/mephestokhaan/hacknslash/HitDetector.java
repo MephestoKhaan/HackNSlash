@@ -10,8 +10,8 @@ import android.util.Log;
 public class HitDetector
 {
     private HitListener delegate;
-    private long maxClashDelay = 400;
-    private long expectedClientDelay = 100;
+    public long maxClashDelay = 400;
+    public long expectedClientDelay = 100;
 
     private long lastPlayer1Slash;
     private long lastPlayer2Slash;
