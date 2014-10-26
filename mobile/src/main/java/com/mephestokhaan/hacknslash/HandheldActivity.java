@@ -6,6 +6,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import org.w3c.dom.Text;
@@ -13,11 +14,14 @@ import org.w3c.dom.Text;
 
 public class HandheldActivity extends Activity implements MessageReceiverListener, HitListener {
 
+    private int maxLives = 5;
+
     private CheckBox serverCheck;
     private TextView ipText;
-
+    private ListView serverOptions;
     private TextView player1Text ,player2Text;
     private int player1Lives, player2Lives;
+    private boolean player1repeatrequested, player2repeatrequested;
 
     private HandeldToHandeldCommunicator handeldToHandeldCommunicator;
     private HandeldToWatchCommunicator handeldToWatchCommunicator;
@@ -92,19 +96,52 @@ public class HandheldActivity extends Activity implements MessageReceiverListene
     {
         this.runOnUiThread(new Runnable() {
             public void run() {
-                player1Text.setText(""+player1Lives);
-                player2Text.setText(""+player2Lives);
+
+                player1Text.setText("" + player1Lives);
+                player2Text.setText("" + player2Lives);
+
+                if(handeldToWatchCommunicator == null || handeldToHandeldCommunicator == null)
+                {
+                    return;
+                }
+
+                handeldToHandeldCommunicator.SendMessage("lives:"+player2Lives);
+                handeldToWatchCommunicator.SendMessage("lives:"+player1Lives);
+
+                if(player1Lives <= 0)
+                {
+                    handeldToWatchCommunicator.SendMessage("lose");
+                    handeldToHandeldCommunicator.SendMessage("win");
+                } else if (player2Lives <= 0)
+                {
+                    handeldToWatchCommunicator.SendMessage("win");
+                    handeldToHandeldCommunicator.SendMessage("lose");
+                }
+
+
             }
         });
     }
 
+    private void TryRepeat()
+    {
+        if(player2repeatrequested && player1repeatrequested)
+        {
+            player2repeatrequested = player1repeatrequested = false;
+            Restart(null);
+        }
+    }
 
     public void Restart(View v)
     {
-        if(serverCheck.isChecked()) {
-            player1Lives = player2Lives = 0;
+        if(serverCheck.isChecked())
+        {
+            player1Lives = player2Lives = maxLives;
 
             UpdateScores();
+
+            handeldToWatchCommunicator.SendMessage("start");
+            handeldToHandeldCommunicator.SendMessage("start");
         }
     }
 
@@ -113,25 +150,37 @@ public class HandheldActivity extends Activity implements MessageReceiverListene
     {
         if(serverCheck.isChecked())
         {
-            hitDetector.Player1Slashes();
-        }
-        else
-        {
-            if(handeldToHandeldCommunicator != null) {
-                handeldToHandeldCommunicator.SendMessage("slash");
+            if(msg.contains("slash")) {
+                hitDetector.Player1Slashes();
             }
+            else if(msg.contains("repeat"))
+            {
+                player1repeatrequested = true;
+                TryRepeat();
+            }
+        }
+        else if(handeldToHandeldCommunicator != null)
+        {
+                handeldToHandeldCommunicator.SendMessage(msg);
         }
     }
 
     @Override
     public void onHandHeldHandheldMessageReceived(String msg)
     {
-        if(msg.equalsIgnoreCase("slash"))
+        if(msg.contains("slash"))
         {
             if(serverCheck.isChecked())
             {
                 hitDetector.Player2Slashes();
             }
+        }
+        else if(msg.contains("repeat"))
+        {
+            player2repeatrequested = true;
+            TryRepeat();
+        }else{
+            handeldToWatchCommunicator.SendMessage(msg);
         }
     }
 
@@ -141,10 +190,10 @@ public class HandheldActivity extends Activity implements MessageReceiverListene
         switch (player)
         {
             case 1:
-                player1Lives++;
+                player2Lives--;
                 break;
             case 2:
-                player2Lives++;
+                player1Lives--;
                 break;
             default:
                 break;

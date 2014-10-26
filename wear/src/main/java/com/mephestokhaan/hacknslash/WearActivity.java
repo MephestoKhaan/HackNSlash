@@ -13,6 +13,9 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.wearable.view.WatchViewStub;
 import android.util.Log;
+import android.view.View;
+import android.widget.ImageButton;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.mephestokhaan.fft.RealDoubleFFT;
@@ -27,7 +30,10 @@ public class WearActivity extends Activity implements SensorEventListener, Messa
 
     private DrawView accelerationView;
     private DrawView audioView;
-    private TextView mTextView;
+    private TextView livesText;
+    private TextView mesageText;
+    private ImageButton repeatButton;
+    private RelativeLayout rootLayout;
 
     private SensorManager mSensorManager;
     private SlashDetector slashDetector = new SlashDetector();
@@ -43,12 +49,13 @@ public class WearActivity extends Activity implements SensorEventListener, Messa
         {
             @Override
             public void onLayoutInflated(WatchViewStub stub) {
-                mTextView = (TextView) stub.findViewById(R.id.text);
+                livesText = (TextView) stub.findViewById(R.id.livesTextView);
+                mesageText = (TextView) stub.findViewById(R.id.mesageText);
                 audioView = (DrawView) stub.findViewById(R.id.audioView);
                 accelerationView = (DrawView) stub.findViewById(R.id.accelerationView);
-
-                audioView.SetProperties(Color.RED, true);
-                accelerationView.SetProperties(Color.BLUE,false);
+                repeatButton = (ImageButton) stub.findViewById(R.id.imageButton);
+                rootLayout = (RelativeLayout) stub.findViewById(R.id.rootlayout);
+                setLionMode(true);
             }
         });
 
@@ -60,6 +67,14 @@ public class WearActivity extends Activity implements SensorEventListener, Messa
         audioAnalyzerTask.execute();
 
         dataCommunicator = new DataCommunicator(this,this);
+    }
+
+    private void setLionMode(boolean lionMode)
+    {
+        audioView.SetProperties(lionMode? Color.YELLOW : Color.RED, true);
+        accelerationView.SetProperties(lionMode ? Color.BLUE : Color.GREEN, false);
+        repeatButton.setImageResource(lionMode ? R.drawable.lion_sword : R.drawable.cocrodile_sword);
+        rootLayout.setBackgroundResource(lionMode ? R.drawable.lion_logo : R.drawable.cocodrile_logo);
     }
 
 
@@ -84,7 +99,30 @@ public class WearActivity extends Activity implements SensorEventListener, Messa
     @Override
     public void onMessageReceived(String msg)
     {
-        mTextView.setText(msg);
+        if(msg.contains("start"))
+        {
+            repeatButton.setVisibility(View.INVISIBLE);
+            mesageText.setText("");
+        }
+        if(msg.contains("lives"))
+        {
+            livesText.setText(msg.split(":")[1]);
+        }
+        if(msg.contains("lose"))
+        {
+            repeatButton.setVisibility(View.VISIBLE);
+            mesageText.setText("YOU LOSE");
+        }
+        if(msg.contains("win"))
+        {
+            repeatButton.setVisibility(View.VISIBLE);
+            mesageText.setText("YOU WIN");
+        }
+    }
+
+    public void requestRepeat(View v)
+    {
+        dataCommunicator.SendMessage("repeat");
     }
 
     private void registerDetector()
@@ -114,7 +152,7 @@ public class WearActivity extends Activity implements SensorEventListener, Messa
 
     public void SendHit()
     {
-        dataCommunicator.SendMessage("HIT at " + System.currentTimeMillis());
+        dataCommunicator.SendMessage("slash");
     }
 
     @Override
