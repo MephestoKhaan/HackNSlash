@@ -46,7 +46,7 @@ public class HitDetector
     {
         handler.removeCallbacks(runnable);
         lastPlayer2Slash = System.currentTimeMillis() - expectedClientDelay;
-        Log.i("PLAYER 2", "" + (lastPlayer2Slash + expectedClientDelay));
+        Log.i("PLAYER 2", "" + lastPlayer2Slash);
         int clash = SlashesClash();
         if(clash != 0)
         {
