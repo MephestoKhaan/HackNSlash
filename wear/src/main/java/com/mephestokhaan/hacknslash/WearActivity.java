@@ -22,6 +22,7 @@ import com.mephestokhaan.fft.RealDoubleFFT;
 
 public class WearActivity extends Activity implements SensorEventListener, MessageReceiverListener
 {
+    private boolean LION_MODE = true;
 
     private RealDoubleFFT transformer;
     private int blockSize = 256;
@@ -55,7 +56,7 @@ public class WearActivity extends Activity implements SensorEventListener, Messa
                 accelerationView = (DrawView) stub.findViewById(R.id.accelerationView);
                 repeatButton = (ImageButton) stub.findViewById(R.id.imageButton);
                 rootLayout = (RelativeLayout) stub.findViewById(R.id.rootlayout);
-                setLionMode(true);
+                setLionMode(LION_MODE);
             }
         });
 
@@ -75,6 +76,7 @@ public class WearActivity extends Activity implements SensorEventListener, Messa
         accelerationView.SetProperties(lionMode ? Color.BLUE : Color.GREEN, false);
         repeatButton.setImageResource(lionMode ? R.drawable.lion_sword : R.drawable.cocrodile_sword);
         rootLayout.setBackgroundResource(lionMode ? R.drawable.lion_logo : R.drawable.cocodrile_logo);
+        slashDetector.audioThresold = lionMode?0.55f : 0.35f;
     }
 
 
