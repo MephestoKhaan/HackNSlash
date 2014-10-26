@@ -147,12 +147,15 @@ public class HandheldActivity extends Activity implements MessageReceiverListene
             TextView clashDelayText = (TextView) findViewById(R.id.clashdelay);
             TextView clientDelayText = (TextView) findViewById(R.id.clietdelay);
 
-            int clashDelay =Integer.parseInt(clashDelayText.getText().toString());
-            int clientDelay = Integer.parseInt(clientDelayText.getText().toString());
+            if(clashDelayText.getText().toString().length() > 0
+                    && clientDelayText.getText().toString().length() > 0)
+            {
+                int clashDelay = Integer.parseInt(clashDelayText.getText().toString());
+                int clientDelay = Integer.parseInt(clientDelayText.getText().toString());
 
-            hitDetector.maxClashDelay = clashDelay;
-            hitDetector.expectedClientDelay = clientDelay;
-
+                hitDetector.maxClashDelay = clashDelay;
+                hitDetector.expectedClientDelay = clientDelay;
+            }
 
             handeldToWatchCommunicator.SendMessage("start");
             handeldToHandeldCommunicator.SendMessage("start");
@@ -201,6 +204,11 @@ public class HandheldActivity extends Activity implements MessageReceiverListene
     @Override
     public void onHitDetected(int player)
     {
+        if(player2Lives <= 0
+         || player1Lives <= 0)
+        {
+            return;
+        }
         switch (player)
         {
             case 1:
