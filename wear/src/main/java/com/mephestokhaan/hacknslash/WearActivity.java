@@ -22,7 +22,7 @@ import com.mephestokhaan.fft.RealDoubleFFT;
 
 public class WearActivity extends Activity implements SensorEventListener, MessageReceiverListener
 {
-    private boolean BLACK_WATCH = false;
+    private boolean BLACK_WATCH = true;
 
     public long syncronizedMilis;
 
@@ -78,7 +78,7 @@ public class WearActivity extends Activity implements SensorEventListener, Messa
         accelerationView.SetProperties(lionMode ? Color.BLUE : Color.GREEN, false);
         repeatButton.setImageResource(lionMode ? R.drawable.replayyellow : R.drawable.replayred);
         rootLayout.setBackgroundResource(lionMode ? R.drawable.lion_logo : R.drawable.cocodrile_logo);
-        slashDetector.audioThresold = lionMode?0.6f : 0.6f;
+        slashDetector.audioThresold = lionMode?0.8f : 0.6f;
     }
 
 
