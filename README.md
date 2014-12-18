@@ -3,6 +3,7 @@ HackNSlash
 
 Laser tag with swords. Thanks to Android-Wear and a mix between the microphone and accelerometer data.
 
+https://www.youtube.com/watch?v=Hx6cerHN9EQ
 
 
 In order to use this you will need:
